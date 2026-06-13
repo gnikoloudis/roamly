@@ -4,6 +4,7 @@ frontend/__pycache__
 node_modules
 .env
 backend/app/__pycache__
+backend/api/__pycache__
 backend/.env.local
 backend/test_google.py
 frontend/build
