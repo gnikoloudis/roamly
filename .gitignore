@@ -1,0 +1,12 @@
+.venv
+backend/__pycache__
+frontend/__pycache__
+node_modules
+.env
+backend/app/__pycache__
+backend/.env.local
+backend/test_google.py
+frontend/build
+frontend/node_modules
+frontend/dist
+old_app/*

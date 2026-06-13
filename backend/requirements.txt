@@ -1,0 +1,10 @@
+fastapi==0.110.0
+googlemaps==4.10.0
+pandas==2.2.1
+uvicorn==0.28.0
+upstash-redis==1.0.0
+numpy==1.26.4
+redis==5.0.5
+python-dotenv==1.0.1
+pydantic==2.7.4
+pydantic-settings==2.3.3
