@@ -14,6 +14,8 @@ let DefaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8080';
+
 const createEmojiIcon = (emoji) => L.divIcon({
     html: `<div style="font-size: 32px; line-height: 1; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); text-align: center;">${emoji}</div>`,
     iconSize: [32, 32],
@@ -74,7 +76,7 @@ export default function BeachDetailPane({
         if (rest.detailsLoaded === false) {
             setLoadingRestIdx(idx);
             try {
-                const res = await fetch(`http://127.0.0.1:8080/api/restaurant/${rest.place_id}`);
+                const res = await fetch(`${API_BASE_URL}/api/restaurant/${rest.place_id}`);
                 const details = await res.json();
                 if (details && details.detailsLoaded) {
                     const updatedRests = beach.top_5_restaurants.map((r, i) => 

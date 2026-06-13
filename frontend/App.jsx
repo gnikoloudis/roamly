@@ -8,6 +8,8 @@ import BeachMatrix from './components/BeachMatrix';
 import BeachDetailPane from './components/BeachDetailPane';
 import { LANG_DICT } from './Lang_dict.jsx';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8080';
+
 export default function App() {
     const [isDark, setIsDark] = useState(false);
     const theme = isDark ? themes.dark : themes.light;
@@ -42,7 +44,7 @@ export default function App() {
     }, [theme]);
 
     useEffect(() => {
-        fetch('http://127.0.0.1:8080/api/usage')
+        fetch(`${API_BASE_URL}/api/usage`)
             .then(res => res.json())
             .then(data => setUsage({ current: data.current_usage, max: data.max_limit }))
             .catch(() => console.log("Backend offline or tracking mapping unreachable."));
@@ -56,7 +58,7 @@ export default function App() {
 
             // If searching via text address landmark mode
             if (locMode === 0 && !overrideLat) {
-                const geoRes = await fetch(`http://127.0.0.1:8080/api/geocode?address=${encodeURIComponent(address)}`);
+                const geoRes = await fetch(`${API_BASE_URL}/api/geocode?address=${encodeURIComponent(address)}`);
                 const geoData = await geoRes.json();
                 if (geoData.lat && geoData.lng) {
                     currentLat = geoData.lat;
@@ -69,7 +71,7 @@ export default function App() {
             const params = new URLSearchParams({ lat: currentLat, lng: currentLng, radius, food_radius: foodRadius, keyword });
             categories.forEach(c => params.append('categories', c));
 
-            const exploreRes = await fetch(`http://127.0.0.1:8080/api/explore?${params.toString()}`);
+            const exploreRes = await fetch(`${API_BASE_URL}/api/explore?${params.toString()}`);
             const exploreData = await exploreRes.json();
 
             if (exploreData.success) {
