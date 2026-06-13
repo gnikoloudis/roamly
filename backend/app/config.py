@@ -13,6 +13,16 @@ class Settings(BaseSettings):
     APP_ENV: str = "local"
     REDIS_URL: Optional[str] = None
 
+    def __init__(self, **values):
+        super().__init__(**values)
+        # Fallback check for MAX_REQUESTS alias key
+        max_requests_env = os.environ.get("MAX_REQUESTS")
+        if max_requests_env:
+            try:
+                self.DAILY_MAX_LIMIT = int(max_requests_env)
+            except ValueError:
+                pass
+
     model_config = SettingsConfigDict(
         env_file=ENV_FILE_PATH, 
         env_file_encoding="utf-8", 
