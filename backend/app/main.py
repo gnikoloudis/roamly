@@ -1,8 +1,11 @@
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import List, Optional
 import functools
+import sys
+import traceback
 
 from app.config import settings
 from app.tracker import check_and_increment_tracker, get_current_usage, force_increment_usage
@@ -27,6 +30,19 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+def log_exception(context: str, exc: Exception):
+    print(f"CRITICAL ERROR in {context}: {exc}", file=sys.stderr)
+    traceback.print_exception(type(exc), exc, exc.__traceback__, file=sys.stderr)
+    sys.stderr.flush()
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request, exc):
+    log_exception(f"Unhandled Exception on {request.url.path}", exc)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": f"Internal Server Error: {str(exc)}"}
+    )
 
 # Shared In-Memory Cache dictionary for Google Maps API to optimize quotas locally
 # key format: (lat, lng, radius, food_radius, tuple(categories), keyword)
@@ -115,6 +131,7 @@ def get_restaurant_details(place_id: str):
                 
         return response_data
     except Exception as e:
+        log_exception("get_restaurant_details", e)
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/explore")
@@ -150,6 +167,7 @@ def explore_shoreline(
             "data": results
         }
     except Exception as e:
+        log_exception("explore_shoreline", e)
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
