@@ -48,6 +48,8 @@ def get_usage():
 
 @app.get("/api/geocode", response_model=AddressResolutionResponse)
 def geocode_address(address: str = Query(..., description="The coastal search name target")):
+    if not settings.GOOGLE_API_KEY:
+        raise HTTPException(status_code=500, detail="Google Maps API Key is not configured on the backend server.")
     client = get_map_client(settings.GOOGLE_API_KEY)
     lat, lng = resolve_address(client, address)
     if not lat or not lng:
@@ -62,6 +64,8 @@ def get_restaurant_details(place_id: str):
             status_code=429, 
             detail="Daily Search Cap Reached! Come back tomorrow for more adventures."
         )
+    if not settings.GOOGLE_API_KEY:
+        raise HTTPException(status_code=500, detail="Google Maps API Key is not configured on the backend server.")
     try:
         client = get_map_client(settings.GOOGLE_API_KEY)
         res = client.place(
@@ -115,6 +119,8 @@ def explore_shoreline(
     categories: List[str] = Query(["natural_feature"]),
     keyword: Optional[str] = Query("")
 ):
+    if not settings.GOOGLE_API_KEY:
+        raise HTTPException(status_code=500, detail="Google Maps API Key is not configured on the backend server.")
     # Verify strict tracking system cap before initiating heavy mapping requests
     under_limit, current_usage = check_and_increment_tracker()
     if not under_limit:

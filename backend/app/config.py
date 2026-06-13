@@ -6,7 +6,7 @@ BACKEND_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ENV_FILE_PATH = os.path.join(BACKEND_ROOT, ".env.local")
 
 class Settings(BaseSettings):
-    GOOGLE_API_KEY: str
+    GOOGLE_API_KEY: Optional[str] = None
     DAILY_MAX_LIMIT: int = 10
     ALL_RAW_RESULTS_LIMIT: int = 5
     RESTAURANT_LIMIT: int = 3
