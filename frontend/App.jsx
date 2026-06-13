@@ -8,7 +8,7 @@ import BeachMatrix from './components/BeachMatrix';
 import BeachDetailPane from './components/BeachDetailPane';
 import { LANG_DICT } from './Lang_dict.jsx';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8080';
+const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://127.0.0.1:8080').replace(/\/$/, '');
 
 export default function App() {
     const [isDark, setIsDark] = useState(false);

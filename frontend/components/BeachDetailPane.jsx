@@ -14,7 +14,7 @@ let DefaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8080';
+const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://127.0.0.1:8080').replace(/\/$/, '');
 
 const createEmojiIcon = (emoji) => L.divIcon({
     html: `<div style="font-size: 32px; line-height: 1; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); text-align: center;">${emoji}</div>`,
