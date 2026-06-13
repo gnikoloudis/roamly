@@ -13,11 +13,10 @@ app = FastAPI(title="Shoreline Guide API Backend", version="2.0.0")
 
 
 
-# Enable Cross-Origin Resource Sharing (CORS) for Next.js web app and local React Native testing
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], 
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
