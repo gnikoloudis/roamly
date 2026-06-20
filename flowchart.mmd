@@ -1,0 +1,81 @@
+flowchart TD
+    %% Frontend Subgraph
+    subgraph Frontend [Frontend: React & Leaflet]
+        Init["On Mount: Fetch Daily Usage"]
+        MapClick["Map Click or Input Coordinates"]
+        SearchBtn["Click Explore Button"]
+        GeocodeCond{"Address Mode?"}
+        GeocodeReq["Call api/geocode"]
+        ExploreReq["Call api/explore"]
+        ReceiveData["Update App State: Beaches, Usage, Selected Beach"]
+        ShowRestReviews["Click Show Reviews on Restaurant"]
+        RestLoadedCond{"detailsLoaded is true?"}
+        RestReq["Call api/restaurant"]
+        UpdateRestState["Update Restaurant State"]
+    end
+
+    %% Backend Subgraph
+    subgraph Backend [Backend: FastAPI & Python]
+        UsageAPI["api/usage Router"]
+        GetUsage["get_current_usage() via Redis or Local File"]
+        
+        GeocodeAPI["api/geocode Router"]
+        ResolveAddress["resolve_address() via Google Maps Client"]
+        
+        ExploreAPI["api/explore Router"]
+        CheckLimit["check_and_increment_tracker()"]
+        LimitCond{"Limit Exceeded?"}
+        Err429["HTTP Exception 429"]
+        CacheCond{"Cache Hit?"}
+        IncrementUsage["force_increment_usage() on cache miss"]
+        FetchComp["fetch_and_rank_competitors()"]
+        GooglePlaces["Google Places API Nearby Search"]
+        HydrateBeach["hydrate_beach() in concurrent threads"]
+        RestCacheCond{"Restaurant Cache Hit (< 1km)?"}
+        GoogleRest["Google Places API Nearby Restaurant Search"]
+        RankRest["rank_restaurants() using Pandas composite score"]
+        
+        RestDetailAPI["api/restaurant/place_id Router"]
+        GooglePlaceDetails["Google Maps Client place()"]
+        SplitReviews["Filter Best & Worst Reviews"]
+    end
+
+    %% Flow connections
+    Init -->|HTTP GET /api/usage| UsageAPI
+    UsageAPI --> GetUsage
+    GetUsage -->|Usage Data| Init
+    
+    MapClick --> SearchBtn
+    SearchBtn --> GeocodeCond
+    GeocodeCond -->|Yes| GeocodeReq
+    GeocodeCond -->|No| ExploreReq
+    GeocodeReq -->|HTTP GET| GeocodeAPI
+    GeocodeAPI --> ResolveAddress
+    ResolveAddress -->|Coordinates| GeocodeReq
+    GeocodeReq --> ExploreReq
+    
+    ExploreReq -->|HTTP GET| ExploreAPI
+    ExploreAPI --> CheckLimit
+    CheckLimit --> LimitCond
+    LimitCond -->|Yes| Err429
+    LimitCond -->|No| CacheCond
+    
+    CacheCond -->|Yes| ReceiveData
+    CacheCond -->|No| IncrementUsage
+    IncrementUsage --> FetchComp
+    FetchComp --> GooglePlaces
+    GooglePlaces --> HydrateBeach
+    HydrateBeach --> RestCacheCond
+    
+    RestCacheCond -->|No| GoogleRest
+    GoogleRest --> RankRest
+    RankRest --> ReceiveData
+    RestCacheCond -->|Yes| ReceiveData
+    
+    ShowRestReviews --> RestLoadedCond
+    RestLoadedCond -->|No| RestReq
+    RestReq -->|HTTP GET| RestDetailAPI
+    RestDetailAPI --> GooglePlaceDetails
+    GooglePlaceDetails --> SplitReviews
+    SplitReviews --> UpdateRestState
+    RestLoadedCond -->|Yes| UpdateRestState

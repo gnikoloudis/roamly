@@ -1,0 +1,50 @@
+erDiagram
+    BEACH {
+        string place_id PK
+        string name
+        float lat
+        float lng
+        string status
+        string amenities
+        string phone
+        string beach_website
+        boolean is_open_now
+    }
+
+    RESTAURANT {
+        string place_id PK
+        string beach_place_id FK
+        string name
+        float rating
+        int user_ratings_total
+        int price_level
+        string formatted_address
+        string website
+        boolean details_loaded
+    }
+
+    BEACH_REVIEW {
+        string beach_place_id FK
+        string author_name
+        int rating
+        string text
+        int time
+    }
+
+    RESTAURANT_REVIEW {
+        string restaurant_place_id FK
+        string author_name
+        int rating
+        string text
+        int time
+    }
+
+    API_USAGE_TRACKER {
+        string date PK
+        int current_usage
+        int max_limit
+    }
+
+    BEACH ||--|{ RESTAURANT : "has"
+    BEACH ||--|{ BEACH_REVIEW : "logs"
+    RESTAURANT ||--|{ RESTAURANT_REVIEW : "logs"
