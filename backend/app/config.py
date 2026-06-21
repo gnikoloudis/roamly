@@ -1,6 +1,6 @@
 import os
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import Optional
+from typing import Optional, List
 
 BACKEND_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ENV_FILE_PATH = os.path.join(BACKEND_ROOT, ".env.local")
@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     RESTAURANT_LIMIT: int = 3
     APP_ENV: str = "local"
     REDIS_URL: Optional[str] = None
+    ALLOWED_ORIGINS: List[str] = []
 
     def __init__(self, **values):
         super().__init__(**values)
@@ -22,6 +23,18 @@ class Settings(BaseSettings):
                 self.DAILY_MAX_LIMIT = int(max_requests_env)
             except ValueError:
                 pass
+        # Parse ALLOWED_ORIGINS from environment variable (comma-separated)
+        allowed_origins_env = os.getenv("ALLOWED_ORIGINS")
+        if allowed_origins_env:
+            self.ALLOWED_ORIGINS = [origin.strip() for origin in allowed_origins_env.split(",") if origin.strip()]
+        # Fallback to default allowed origins if not provided via env
+        if not self.ALLOWED_ORIGINS:
+            self.ALLOWED_ORIGINS = [
+                "http://localhost:3000",
+                "http://localhost:5173",
+                "http://127.0.0.1:3000",
+                "http://127.0.0.1:5173",
+            ]
 
     model_config = SettingsConfigDict(
         env_file=ENV_FILE_PATH, 
