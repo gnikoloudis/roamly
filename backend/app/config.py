@@ -1,6 +1,7 @@
 import os
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Optional, List
+from pydantic import field_validator
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -20,6 +21,27 @@ class Settings(BaseSettings):
     ALLOW_HEADERS: List[str] = ["*"]
     ALLOW_ORIGIN_REGEX: Optional[str] = None
 
+    @field_validator("ALLOWED_ORIGINS", mode="before")
+    @classmethod
+    def parse_allowed_origins(cls, v):
+        if isinstance(v, str):
+            v = [origin.strip() for origin in v.split(",") if origin.strip()]
+        if not v:
+            return [
+                "http://localhost:3000",
+                "http://localhost:5173",
+                "http://127.0.0.1:3000",
+                "http://127.0.0.1:5173",
+            ]
+        return v
+
+    @field_validator("ALLOW_METHODS", "ALLOW_HEADERS", mode="before")
+    @classmethod
+    def parse_comma_separated_list(cls, v):
+        if isinstance(v, str):
+            return [item.strip() for item in v.split(",") if item.strip()]
+        return v
+
     def __init__(self, **values):
         super().__init__(**values)
         # Fallback check for MAX_REQUESTS alias key
@@ -29,31 +51,6 @@ class Settings(BaseSettings):
                 self.DAILY_MAX_LIMIT = int(max_requests_env)
             except ValueError:
                 pass
-        # Parse ALLOWED_ORIGINS from environment variable (comma-separated)
-        allowed_origins_env = os.getenv("ALLOWED_ORIGINS")
-        if allowed_origins_env:
-            self.ALLOWED_ORIGINS = [origin.strip() for origin in allowed_origins_env.split(",") if origin.strip()]
-        # Parse additional CORS settings from env
-        allow_credentials_env = os.getenv("ALLOW_CREDENTIALS")
-        if allow_credentials_env is not None:
-            self.ALLOW_CREDENTIALS = allow_credentials_env.lower() in ("true", "1", "yes")
-        allow_methods_env = os.getenv("ALLOW_METHODS")
-        if allow_methods_env:
-            self.ALLOW_METHODS = [m.strip() for m in allow_methods_env.split(",") if m.strip()]
-        allow_headers_env = os.getenv("ALLOW_HEADERS")
-        if allow_headers_env:
-            self.ALLOW_HEADERS = [h.strip() for h in allow_headers_env.split(",") if h.strip()]
-        allow_origin_regex_env = os.getenv("ALLOW_ORIGIN_REGEX")
-        if allow_origin_regex_env:
-            self.ALLOW_ORIGIN_REGEX = allow_origin_regex_env
-        # Fallback to default allowed origins if not provided via env
-        if not self.ALLOWED_ORIGINS:
-            self.ALLOWED_ORIGINS = [
-                "http://localhost:3000",
-                "http://localhost:5173",
-                "http://127.0.0.1:3000",
-                "http://127.0.0.1:5173",
-            ]
 
     model_config = SettingsConfigDict(
         env_file=ENV_FILE_PATH, 
