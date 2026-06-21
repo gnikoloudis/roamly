@@ -11,19 +11,14 @@ from app.config import settings
 from app.tracker import check_and_increment_tracker, get_current_usage, force_increment_usage
 from app.shoreline_analytics import get_map_client, resolve_address, fetch_and_rank_competitors
 from app.config_lang import LANG_DICT
+from app.config import register_cors
 
 app = FastAPI(title="Shoreline Guide API Backend", version="2.0.0")
 
 
 
 app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS,
-    allow_origin_regex=r"https://roamly-frontend-.*\.vercel\.app",
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+    register_cors(app)
 
 def log_exception(context: str, exc: Exception):
     print(f"CRITICAL ERROR in {context}: {exc}", file=sys.stderr)
