@@ -17,8 +17,7 @@ app = FastAPI(title="Shoreline Guide API Backend", version="2.0.0")
 
 
 
-app.add_middleware(
-    register_cors(app)
+register_cors(app)
 
 def log_exception(context: str, exc: Exception):
     print(f"CRITICAL ERROR in {context}: {exc}", file=sys.stderr)
