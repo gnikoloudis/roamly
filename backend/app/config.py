@@ -1,6 +1,6 @@
 import os
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import Optional, List
+from typing import Optional, List, Union
 from pydantic import field_validator
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,10 +15,10 @@ class Settings(BaseSettings):
     RESTAURANT_LIMIT: int = 3
     APP_ENV: str = "local"
     REDIS_URL: Optional[str] = None
-    ALLOWED_ORIGINS: List[str] = []
+    ALLOWED_ORIGINS: Union[str, List[str]] = []
     ALLOW_CREDENTIALS: bool = True
-    ALLOW_METHODS: List[str] = ["*"]
-    ALLOW_HEADERS: List[str] = ["*"]
+    ALLOW_METHODS: Union[str, List[str]] = ["*"]
+    ALLOW_HEADERS: Union[str, List[str]] = ["*"]
     ALLOW_ORIGIN_REGEX: Optional[str] = None
 
     @field_validator("ALLOWED_ORIGINS", mode="before")
